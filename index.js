@@ -31,15 +31,19 @@ const categories = ['fruits', 'vegetable', 'dairy', 'fungi', 'baked goods'];
 // first route!!
 // because it takes time, so use async...await
 app.get('/products', async(req, res) => {
-    const { category } = req.query;
-    // nếu có category query string thì:
-    if (category) {
-        const products = await Product.find({ category })
-        res.render('products/index', { products, category })
-    } else {
-        const products = await Product.find({})
-        res.render('products/index', { products, category: 'All' })
-            // cho {products} argument vào để dùng ở ejs
+    try {
+        const { category } = req.query;
+        // nếu có category query string thì:
+        if (category) {
+            const products = await Product.find({ category })
+            res.render('products/index', { products, category })
+        } else {
+            const products = await Product.find({})
+            res.render('products/index', { products, category: 'All' })
+                // cho {products} argument vào để dùng ở ejs
+        }
+    } catch (e) {
+        next(e)
     }
 })
 
@@ -75,39 +79,51 @@ app.post('/products', async(req, res, next) => {
 // Product details!!
 // Sử dụng id thay vì tên vì không URL friendly (có cách SLUG, nhưng bây h chưa cần làm)
 app.get('/products/:id', async(req, res, next) => {
-    const { id } = req.params;
-    // hoặc Product.findOne({_id:id})
-    const product = await Product.findById(id)
-        // console.log(product);
-        // res.send('details page!')
-    if (!product) {
-        next(new AppError('Product Not Found', 404));
+    try {
+        const { id } = req.params;
+        // hoặc Product.findOne({_id:id})
+        const product = await Product.findById(id)
+            // console.log(product);
+            // res.send('details page!')
+        if (!product) {
+            throw new AppError('Product Not Found', 404);
+        }
+        res.render('products/show', { product })
+    } catch (e) {
+        next(e)
     }
-    res.render('products/show', { product })
 })
 
 // UPDATE PRODUCTS
 // need the id to know what to edit & to prepopulate the form
 app.get('/products/:id/edit', async(req, res, next) => {
-        const { id } = req.params;
-        // phải lấy id từ query xuống đây, nếu k sẽ bị "UnhandledPromiseRejectionWarning: ReferenceError: id is not defined"
-        const product = await Product.findById(id);
-        if (!product) {
-            next(new AppError('Product Not Found', 404));
+        try {
+            const { id } = req.params;
+            // phải lấy id từ query xuống đây, nếu k sẽ bị "UnhandledPromiseRejectionWarning: ReferenceError: id is not defined"
+            const product = await Product.findById(id);
+            if (!product) {
+                throw new AppError('Product Not Found', 404);
+            }
+            res.render('products/edit', { product, categories })
+        } catch (e) {
+            next(e)
         }
-        res.render('products/edit', { product, categories })
     })
     // create an endpoint to submit (PUT hay là PATCH?)
-app.put('/products/:id', async(req, res) => {
-    // from a form, we cant make a PUT request, so out edit form is going to be a POST request
-    const { id } = req.params;
-    // validator is off be default, và new:true là để return modified document
-    const product = await Product.findByIdAndUpdate(id, req.body, { runValidators: true, new: true });
-    // console.log(req.body)
-    // res.send('PUT!!!')
-    res.redirect(`/products/${product._id}`);
-    // redirect to show route
-    // dùng product._id thay vì id lấy từ req.params là vì product._id sẽ work khi mà product được lấy thành công từ Update => cho nên phải await Product.findByIdAndUpdate
+app.put('/products/:id', async(req, res, next) => {
+    try {
+        // from a form, we cant make a PUT request, so out edit form is going to be a POST request
+        const { id } = req.params;
+        // validator is off be default, và new:true là để return modified document
+        const product = await Product.findByIdAndUpdate(id, req.body, { runValidators: true, new: true });
+        // console.log(req.body)
+        // res.send('PUT!!!')
+        res.redirect(`/products/${product._id}`);
+        // redirect to show route
+        // dùng product._id thay vì id lấy từ req.params là vì product._id sẽ work khi mà product được lấy thành công từ Update => cho nên phải await Product.findByIdAndUpdate
+    } catch (e) {
+        next(e)
+    }
 })
 
 // DELETE route
