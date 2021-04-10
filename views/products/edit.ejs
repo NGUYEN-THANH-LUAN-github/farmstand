@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Product</title>
+</head>
+
+<body>
+    <h1>Edit Product</h1>
+    <!-- sau khi install method-override thì phải thêm query string ?_method=PUT -->
+    <form action="/products/<%=product._id%>?_method=PUT" method="POST">
+        <!-- Phải install method-override thay thế cho mỗi method vì form ko thể PUT request -->
+
+        <label for="name">Product Name</label>
+        <input id="name" type="text" name="name" placeholder="product name" value="<%=product.name%>">
+        <!-- value attribute to prepopulate -->
+
+        <label for="price">Price (Unit)</label>
+        <input id="price" type="number" name="price" placeholder="product price" value="<%= product.price  %>">
+
+        <label for="category">Select Category</label>
+        <select id="category" name="category" id="">
+            <% for(let category of categories) {%>
+                <option value="<%= category %>" <%=product.category===category?"selected":""%>><%= category %> </option>
+                <% } %> 
+        </select>
+        <button>Submit</button>
+    </form>
+    <a href="/products/<%=product._id%>">Cancel</a>
+</body>
+
+</html>
