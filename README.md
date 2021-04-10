@@ -2,4 +2,4 @@
 
 from Web Dev Bootcamp by Colt Steele
 
-to learn CRUD, and handling express errors
+CRUD boilerplate with handling express errors
